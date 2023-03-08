@@ -30,17 +30,17 @@ export class UsersService implements IUserService {
         };
       }
 
-      const hashedPassword = await bcrypt.hash(password, process.env.SALT_ROUND);
+      const hashedPassword = await bcrypt.hash(password, Number(process.env.SALT_ROUND));
 
       await this.prisma.user.create({
         data: {
-          name,
-          location,
           email,
-          username,
           password: hashedPassword,
-          avatarUrl,
-          githubUsername,
+          ...(username && { username }),
+          ...(name && { name }),
+          ...(location && { location }),
+          ...(avatarUrl && { avatarUrl }),
+          ...(githubUsername && { githubUsername }),
         },
       });
 
