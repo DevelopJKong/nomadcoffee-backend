@@ -4,6 +4,10 @@ import { CommonModule } from './common/common.module';
 import { PrismaModule } from './prisma/prisma.module';
 import * as Joi from 'joi';
 import { ConfigModule } from '@nestjs/config';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { GraphQLModule } from '@nestjs/graphql';
+
+const TOKEN_KEY = 'x-jwt' as const;
 @Module({
   imports: [
     PrismaModule,
@@ -17,7 +21,30 @@ import { ConfigModule } from '@nestjs/config';
         BACKEND_URL: Joi.string().required(),
         FRONTEND_URL: Joi.string().required(),
         PRIVATE_KEY: Joi.string().required(),
+        SALT_ROUNDS: Joi.string().required(),
       }),
+    }),
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      fieldResolverEnhancers: ['interceptors'],
+      installSubscriptionHandlers: true,
+      driver: ApolloDriver,
+      autoSchemaFile: true,
+      subscriptions: {
+        'subscriptions-transport-ws': {
+          onConnect: (connectionParams: { [TOKEN_KEY]: string }) => {
+            const { [TOKEN_KEY]: token } = connectionParams;
+            if (!token) throw new Error('Missing auth token!');
+            return {
+              token: connectionParams[TOKEN_KEY],
+            };
+          },
+        },
+      },
+      context: ({ req }) => {
+        return {
+          token: req.headers[TOKEN_KEY],
+        };
+      },
     }),
     UsersModule,
     CommonModule,
