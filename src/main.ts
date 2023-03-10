@@ -6,6 +6,8 @@ import * as express from 'express';
 import { join } from 'path';
 import { BACKEND_URL, fileFolder, PORT } from './common/common.constant';
 import { ValidationPipe } from '@nestjs/common';
+import { LoggerInterceptor } from './libs/logger/logger.interceptor';
+import { LoggerService } from './libs/logger/logger.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -22,6 +24,8 @@ async function bootstrap() {
   app.use('/files', express.static(join(__dirname, '../files')));
   app.enableCors();
 
+  // ! LoggerInterceptor 사용 시
+  app.useGlobalInterceptors(new LoggerInterceptor(new LoggerService({ nodeEnv: process.env.NODE_ENV })));
   const start = () => console.log(`Server Start! ${BACKEND_URL}`);
   await app.listen(PORT, start);
 }

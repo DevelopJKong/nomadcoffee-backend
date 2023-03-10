@@ -6,6 +6,9 @@ import * as Joi from 'joi';
 import { ConfigModule } from '@nestjs/config';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { GraphQLModule } from '@nestjs/graphql';
+import { LoggerModule } from './libs/logger/logger.module';
+import { JwtModule } from './libs/jwt/jwt.module';
+import { UploadsModule } from './libs/uploads/uploads.module';
 
 const TOKEN_KEY = 'x-jwt' as const;
 @Module({
@@ -22,6 +25,9 @@ const TOKEN_KEY = 'x-jwt' as const;
         FRONTEND_URL: Joi.string().required(),
         PRIVATE_KEY: Joi.string().required(),
         SALT_ROUNDS: Joi.string().required(),
+        AWS_ACCESS_KEY_ID: Joi.string().required(),
+        AWS_SECRET_ACCESS_KEY: Joi.string().required(),
+        AWS_BUCKET_NAME: Joi.string().required(),
       }),
     }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
@@ -46,8 +52,20 @@ const TOKEN_KEY = 'x-jwt' as const;
         };
       },
     }),
+    LoggerModule.forRoot({
+      nodeEnv: process.env.NODE_ENV,
+    }),
+    JwtModule.forRoot({
+      privateKey: process.env.PRIVATE_KEY,
+    }),
+    UploadsModule.forRoot({
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+      bucketName: process.env.AWS_BUCKET_NAME,
+    }),
     UsersModule,
     CommonModule,
+    UploadsModule,
   ],
   providers: [],
 })

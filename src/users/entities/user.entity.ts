@@ -1,8 +1,10 @@
-import { InputType, ObjectType, Field } from '@nestjs/graphql';
+import { InputType, ObjectType, Field, registerEnumType } from '@nestjs/graphql';
 import { CoreEntity } from '../../common/entities/core.entity';
-import { IsEmail, IsString, Matches, IsOptional } from 'class-validator';
+import { IsEmail, IsString, Matches, IsOptional, IsEnum } from 'class-validator';
 import { Transform } from 'class-transformer';
+import { RoleData } from '@prisma/client';
 
+registerEnumType(RoleData, { name: 'Role' });
 @InputType('UserInputType', { isAbstract: true })
 @ObjectType()
 export class User extends CoreEntity {
@@ -42,4 +44,8 @@ export class User extends CoreEntity {
   @IsString({ message: '깃허브 닉네임는 문자열이어야 합니다.' })
   @IsOptional()
   githubUsername?: string;
+
+  @Field(_type => RoleData)
+  @IsEnum(RoleData)
+  role: RoleData;
 }
