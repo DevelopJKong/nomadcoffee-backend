@@ -29,15 +29,10 @@ export class UsersService implements IUserService {
     private readonly uploadsService: UploadsService,
   ) {}
   successLogger(service: { name: string }, method: string): winston.Logger {
-    return this.log
-      .logger()
-      .info(
-        `${chalk.yellow(service.name)}` +
-          ' => ' +
-          `${chalk.cyan(`${this[`${method}`].name}()`)}` +
-          ' | Success Message ::: ' +
-          `${chalk.green('데이터 호출 성공')}`,
-      );
+    const colorName = chalk.yellow(service.name);
+    const colorMethod = chalk.cyan(`${this[`${method}`].name}()`);
+    const colorSuccess = chalk.green('데이터 호출 성공');
+    return this.log.logger().info(`${colorName} => ${colorMethod} | Success Message ::: ${colorSuccess}`);
   }
 
   async totalFollowing(id: number): Promise<number> {
