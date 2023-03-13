@@ -16,6 +16,7 @@ import * as fs from 'fs';
 import { UploadsService } from '../libs/uploads/uploads.service';
 import { LoggerService } from '../libs/logger/logger.service';
 import * as winston from 'winston';
+import * as chalk from 'chalk';
 import { User } from './entities/user.entity';
 import { FollowUserInput, FollowUserOutput } from './dto/follow-user.dto';
 import { UnFollowUserInput, UnFollowUserOutput } from './dto/un-follow-user.dto';
@@ -30,7 +31,13 @@ export class UsersService implements IUserService {
   successLogger(service: { name: string }, method: string): winston.Logger {
     return this.log
       .logger()
-      .info(`${service.name} => ${this[`${method}`].name}() | Success Message ::: 데이터 호출 성공`);
+      .info(
+        `${chalk.yellow(service.name)}` +
+          ' => ' +
+          `${chalk.cyan(`${this[`${method}`].name}()`)}` +
+          ' | Success Message ::: ' +
+          `${chalk.green('데이터 호출 성공')}`,
+      );
   }
 
   async totalFollowing(id: number): Promise<number> {
@@ -192,11 +199,12 @@ export class UsersService implements IUserService {
           followers: true,
         },
       });
-
-      const totalFollowing = await this.totalFollowing(id);
-      const totalFollowers = await this.totalFollowers(id);
-      const isMe = this.isMe(user, userId);
-      const isFollowing = await this.isFollowing(user, userId);
+      const [totalFollowing, totalFollowers, isFollowing, isMe] = await Promise.all([
+        this.totalFollowing(id), // ! 팔로잉 수
+        this.totalFollowers(id), // ! 팔로워 수
+        this.isFollowing(user, userId), // ! 팔로잉 여부 확인
+        this.isMe(user, userId), // ! 내 계정인지 확인
+      ]);
 
       if (!user) {
         return {

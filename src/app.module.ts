@@ -9,6 +9,8 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { LoggerModule } from './libs/logger/logger.module';
 import { JwtModule } from './libs/jwt/jwt.module';
 import { UploadsModule } from './libs/uploads/uploads.module';
+import { AuthModule } from './libs/auth/auth.module';
+import { DEV, PROD } from './common/common.constant';
 
 const TOKEN_KEY = 'x-jwt' as const;
 @Module({
@@ -16,10 +18,10 @@ const TOKEN_KEY = 'x-jwt' as const;
     PrismaModule,
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: process.env.NODE_ENV === 'dev' ? '.env.development' : '.env',
-      ignoreEnvFile: process.env.NODE_ENV === 'prod',
+      envFilePath: process.env.NODE_ENV === DEV ? '.env.development' : '.env',
+      ignoreEnvFile: process.env.NODE_ENV === PROD,
       validationSchema: Joi.object({
-        NODE_ENV: Joi.string().valid('development', 'production').required(),
+        NODE_ENV: Joi.string().valid(DEV, PROD).required(),
         PORT: Joi.string().valid('3000', '5000').required(),
         BACKEND_URL: Joi.string().required(),
         FRONTEND_URL: Joi.string().required(),
@@ -63,6 +65,7 @@ const TOKEN_KEY = 'x-jwt' as const;
       secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
       bucketName: process.env.AWS_BUCKET_NAME,
     }),
+    AuthModule,
     UsersModule,
     CommonModule,
     UploadsModule,
