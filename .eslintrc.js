@@ -6,11 +6,7 @@ module.exports = {
     sourceType: 'module',
   },
   plugins: ['@typescript-eslint/eslint-plugin'],
-  extends: [
-    'plugin:@typescript-eslint/recommended',
-    'plugin:prettier/recommended',
-    'prettier',
-  ],
+  extends: ['plugin:@typescript-eslint/recommended', 'plugin:prettier/recommended', 'prettier'],
   root: true,
   env: {
     node: true,
@@ -19,9 +15,6 @@ module.exports = {
   ignorePatterns: ['.eslintrc.js'],
   rules: {
     // ? nestjs 기본 eslint
-    '@typescript-eslint/interface-name-prefix': 'off',
-    '@typescript-eslint/explicit-function-return-type': 'off',
-    '@typescript-eslint/explicit-module-boundary-types': 'off',
     // ! 사용되지 않는 변수에 대한 경고를 무시합니다.
     '@typescript-eslint/no-unused-vars': [
       'warn', // or "error"
@@ -50,6 +43,7 @@ module.exports = {
         minimumDescriptionLength: 3,
       },
     ],
+    '@typescript-eslint/interface-name-prefix': 'off', // ! interface 이름에 I를 사용하지 않으면 경고를 발생시킵니다.
     '@typescript-eslint/explicit-member-accessibility': 'off', // ! 클래스 멤버 접근 제한자를 사용하지 않으면 경고를 발생시킵니다.
     '@typescript-eslint/explicit-function-return-type': 'off', // ! 함수의 반환 타입을 명시하지 않으면 경고를 발생시킵니다.
     '@typescript-eslint/no-parameter-properties': 'off', // ! 생성자의 매개변수에 접근 제한자를 사용하지 않으면 경고를 발생시킵니다.
