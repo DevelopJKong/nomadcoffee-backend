@@ -11,4 +11,10 @@ export const USER_SUCCESS = {
   editProfile: {
     text: '유저 정보 수정 성공',
   },
+  followUser: {
+    text: '유저 팔로우 성공',
+  },
+  unFollowUser: {
+    text: '유저 언팔로우 성공',
+  },
 };

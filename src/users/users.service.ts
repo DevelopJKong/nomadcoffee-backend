@@ -14,13 +14,89 @@ import { BACKEND_URL, fileFolder } from 'src/common/common.constant';
 import { createWriteStream } from 'fs';
 import * as fs from 'fs';
 import { UploadsService } from '../libs/uploads/uploads.service';
+import { LoggerService } from '../libs/logger/logger.service';
+import * as winston from 'winston';
+import { User } from './entities/user.entity';
+import { FollowUserInput, FollowUserOutput } from './dto/follow-user.dto';
+import { UnFollowUserInput, UnFollowUserOutput } from './dto/un-follow-user.dto';
 @Injectable()
 export class UsersService implements IUserService {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly log: LoggerService,
     private readonly jwtService: JwtService,
     private readonly uploadsService: UploadsService,
   ) {}
+  successLogger(service: { name: string }, method: string): winston.Logger {
+    return this.log
+      .logger()
+      .info(`${service.name} => ${this[`${method}`].name}() | Success Message ::: 데이터 호출 성공`);
+  }
+
+  async totalFollowing(id: number): Promise<number> {
+    // ! 팔로잉 수
+    const totalFollowing = await this.prisma.user
+      .count({
+        where: {
+          followers: {
+            some: {
+              id,
+            },
+          },
+        },
+      })
+      .catch(error => error && 0);
+    this.successLogger(UsersService, this.totalFollowing.name);
+    return totalFollowing;
+  }
+
+  async totalFollowers(id: number): Promise<number> {
+    // ! 팔로워 수
+    const totalFollowers = await this.prisma.user
+      .count({
+        where: {
+          following: {
+            some: {
+              id,
+            },
+          },
+        },
+      })
+      .catch(error => error && 0);
+    this.successLogger(UsersService, this.totalFollowers.name);
+    return totalFollowers;
+  }
+
+  isMe(user: User, id: number): boolean {
+    if (!user) {
+      return false;
+    }
+    // ! 내 계정인지 확인
+    this.successLogger(UsersService, this.isMe.name);
+    return id === user.id;
+  }
+
+  async isFollowing(user: User, id: number): Promise<boolean> {
+    if (!user) {
+      return false;
+    }
+    // ! 팔로잉 여부 확인
+    const isFollowing = await this.prisma.user
+      .count({
+        where: {
+          username: user.username,
+          following: {
+            some: {
+              id,
+            },
+          },
+        },
+      })
+      .catch(error => error && false);
+    this.successLogger(UsersService, this.isFollowing.name);
+    return Boolean(isFollowing);
+  }
+
   async createAccount({
     email,
     password,
@@ -66,7 +142,7 @@ export class UsersService implements IUserService {
       };
     } catch (error) {
       // ! extraError
-      return { ok: false, error: new Error(error), message: 'extraError' };
+      return { ok: false, error: new Error(error), message: COMMON_ERROR.extraError.text };
     }
   }
   async login({ email, password }: LoginInput): Promise<LoginOutput> {
@@ -106,12 +182,21 @@ export class UsersService implements IUserService {
       return { ok: false, error: new Error(error), message: COMMON_ERROR.extraError.text };
     }
   }
-  async seeProfile(_: number, { id }: SeeProfileInput): Promise<SeeProfileOutput> {
+  async seeProfile(userId: number, { id }: SeeProfileInput): Promise<SeeProfileOutput> {
     try {
       // ! 존재하지 않는 유저
       const user = await this.prisma.user.findUnique({
         where: { id },
+        include: {
+          following: true,
+          followers: true,
+        },
       });
+
+      const totalFollowing = await this.totalFollowing(id);
+      const totalFollowers = await this.totalFollowers(id);
+      const isMe = this.isMe(user, userId);
+      const isFollowing = await this.isFollowing(user, userId);
 
       if (!user) {
         return {
@@ -125,6 +210,10 @@ export class UsersService implements IUserService {
         ok: true,
         message: USER_SUCCESS.seeProfile.text,
         user,
+        totalFollowing,
+        totalFollowers,
+        isMe,
+        isFollowing,
       };
     } catch (error) {
       // ! extraError
@@ -188,6 +277,71 @@ export class UsersService implements IUserService {
       return {
         ok: true,
         message: USER_SUCCESS.editProfile.text,
+      };
+    } catch (error) {
+      // ! extraError
+      return { ok: false, error: new Error(error), message: COMMON_ERROR.extraError.text };
+    }
+  }
+
+  async followUser(userId: number, { email }: FollowUserInput): Promise<FollowUserOutput> {
+    try {
+      const ok = await this.prisma.user.findUnique({ where: { email } });
+
+      if (!ok) {
+        return {
+          ok: false,
+          error: new Error(USER_ERROR.notExistUser.text),
+          message: USER_ERROR.notExistUser.text,
+        };
+      }
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: {
+          following: {
+            connect: {
+              email,
+            },
+          },
+        },
+      });
+
+      return {
+        ok: true,
+        message: USER_SUCCESS.followUser.text,
+      };
+    } catch (error) {
+      // ! extraError
+      return { ok: false, error: new Error(error), message: COMMON_ERROR.extraError.text };
+    }
+  }
+
+  async unFollowUser(userId: number, { email }: UnFollowUserInput): Promise<UnFollowUserOutput> {
+    try {
+      const ok = await this.prisma.user.findUnique({ where: { email } });
+
+      if (!ok) {
+        return {
+          ok: false,
+          error: new Error(USER_ERROR.notExistUser.text),
+          message: USER_ERROR.notExistUser.text,
+        };
+      }
+
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: {
+          following: {
+            disconnect: {
+              email,
+            },
+          },
+        },
+      });
+
+      return {
+        ok: true,
+        message: USER_SUCCESS.unFollowUser.text,
       };
     } catch (error) {
       // ! extraError
