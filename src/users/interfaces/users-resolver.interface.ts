@@ -16,6 +16,6 @@ export interface IUserService {
   login(loginInput: LoginInput): Promise<LoginOutput>;
   seeProfile(userId: number, seeProfileInput: SeeProfileInput): Promise<SeeProfileOutput>;
   editProfile(userId: number, editProfileInput: EditProfileInput): Promise<EditProfileOutput>;
-  followUser(userId: number, { username }: FollowUserInput): Promise<FollowUserOutput>;
-  unFollowUser(userId: number, { username }: UnFollowUserInput): Promise<UnFollowUserOutput>;
+  followUser(userId: number, { email }: FollowUserInput): Promise<FollowUserOutput>;
+  unFollowUser(userId: number, { email }: UnFollowUserInput): Promise<UnFollowUserOutput>;
 }
