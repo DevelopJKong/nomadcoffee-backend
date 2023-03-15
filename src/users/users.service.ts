@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateAccountOutput, CreateAccountInput } from './dto/create-account.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
-import { IUserService } from './interfaces/users-resolver.interface';
+import { IUserService } from './interfaces/users-service.interface';
 import { LoginInput, LoginOutput } from './dto/login.dto';
 import { COMMON_ERROR, USER_ERROR } from '../common/constants/error.constant';
 import { JwtService } from '../libs/jwt/jwt.service';
@@ -184,14 +184,14 @@ export class UsersService implements IUserService {
       return { ok: false, error: new Error(error), message: COMMON_ERROR.extraError.text };
     }
   }
-  async seeProfile(userId: number, { id }: SeeProfileInput): Promise<SeeProfileOutput> {
+  async seeProfile(userId: number, { id, page }: SeeProfileInput): Promise<SeeProfileOutput> {
     try {
       // ! 존재하지 않는 유저
       const user = await this.prisma.user.findUnique({
         where: { id },
         include: {
-          following: true,
-          followers: true,
+          following: { take: 5, skip: (page - 1) * 5 },
+          followers: { take: 5, skip: (page - 1) * 5 },
         },
       });
       const [totalFollowing, totalFollowers, isFollowing, isMe] = await Promise.all([

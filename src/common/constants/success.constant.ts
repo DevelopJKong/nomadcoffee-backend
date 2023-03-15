@@ -18,3 +18,24 @@ export const USER_SUCCESS = {
     text: '유저 언팔로우 성공',
   },
 };
+
+export const COFFEE_SHOP_SUCCESS = {
+  createCoffeeShop: {
+    text: '카페 생성 성공',
+  },
+  editCoffeeShop: {
+    text: '카페 수정 성공',
+  },
+  seeCoffeeShops: {
+    text: '카페 목록 조회 성공',
+  },
+  seeCoffeeShop: {
+    text: '카페 상세 조회 성공',
+  },
+  seeCategories: {
+    text: '카테고리 목록 조회 성공',
+  },
+  seeCategory: {
+    text: '카테고리 상세 조회 성공',
+  },
+};

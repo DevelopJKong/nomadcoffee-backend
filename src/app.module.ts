@@ -11,6 +11,7 @@ import { JwtModule } from './libs/jwt/jwt.module';
 import { UploadsModule } from './libs/uploads/uploads.module';
 import { AuthModule } from './libs/auth/auth.module';
 import { DEV, PROD } from './common/common.constant';
+import { CoffeeShopsModule } from './coffee-shops/coffee-shops.module';
 
 const TOKEN_KEY = 'x-jwt' as const;
 @Module({
@@ -69,6 +70,7 @@ const TOKEN_KEY = 'x-jwt' as const;
     UsersModule,
     CommonModule,
     UploadsModule,
+    CoffeeShopsModule,
   ],
   providers: [],
 })

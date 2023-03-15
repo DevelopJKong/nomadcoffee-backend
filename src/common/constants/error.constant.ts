@@ -9,6 +9,17 @@ export const USER_ERROR = {
   },
 };
 
+export const COFFEE_SHOP_ERROR = {
+  notExistCoffeeShop: {
+    error: 'notExistCoffeeShop',
+    text: '존재하지 않는 카페입니다.',
+  },
+  notOwner: {
+    error: 'notOwner',
+    text: '카페 주인이 아닙니다.',
+  },
+};
+
 export const COMMON_ERROR = {
   extraError: {
     text: 'extraError',
