@@ -95,6 +95,6 @@
     "testEnvironment": "node"
   },
   "engines": {
-    "node": "16.19.1"
+    "node": ">=16.19.1"
   }
 }
